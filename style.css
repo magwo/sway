@@ -1,0 +1,26 @@
+
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+body {
+  background-color: #555;
+  color: #eee;
+  font-family: Helvetica-NeueLight, Helvetica-Neue, HelveticaLight, Arial, sans-serif
+}
+
+
+#dom_overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  padding: 10px 30px;
+}
+
+#dom_overlay {
+  z-index: 10000;
+}
