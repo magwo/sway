@@ -1,0 +1,10 @@
+
+* Recursive random deterministic seed support, seeds determine tree looks deterministically
+* Progressive tree generation from parameters: baseSize, slimness, straightness, stiffness, branchCount, colors
+* Coloring
+
+* Later: Withering/falling down (cycle of life)
+* Later: Collision with objects
+* Later: Polygon graphics for completely joined tree
+* Later: Wind effects - general and from mouse movement
+* Later: Snow/rain effects
