@@ -1,6 +1,6 @@
 
 
-function treeGrower(game, barkTex, leafTex, flowerTex, collisionGroup, collidesWith) {
+function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, collidesWith) {
   var grower = {};
 
   function getEndpoint(sprite) {
@@ -12,41 +12,44 @@ function treeGrower(game, barkTex, leafTex, flowerTex, collisionGroup, collidesW
     var sprite = game.add.sprite(position[0], position[1], texture);
     //sprite.rotation = angle;
     sprite.width = startLength;
-    sprite.height = startWidth; // TODO: Set starting height to some fraction of parent height
+    sprite.height = startWidth;
 
-
-    game.physics.p2.enable(sprite);
-    sprite.body.angularDamping = 0.1;
-    sprite.body.damping = 0.2;
-    sprite.body.rotation = angle;
-
-    sprite.body.setCollisionGroup(collisionGroup);
-    sprite.body.collides(collidesWith);
-    sprite.body.collideWorldBounds = true;
-
-    if(parent) {
-      // TODO: Position sprite at end of parent
-
-      sprite.body.mass = parent.sprite.body.mass * (sprite.width * sprite.height) / (parent.sprite.width * parent.sprite.height);
-      if(isNotBranch) {
-        // TODO: Make non-physical object
-        sprite.body.mass /= 20.0;
-        sprite.body.collideWorldBounds = false;
-      }
-      console.log("WIdth", sprite.width);
-      var revoConstraint = game.physics.p2.createRevoluteConstraint(parent.sprite, [-parent.sprite.width*0.97/2, 0], sprite, [sprite.width*0.97/2, 0]);
-      var gearConstraint = game.physics.p2.createGearConstraint(parent.sprite, sprite, angle);
-      gearConstraint.setStiffness(1000);
+    if(isNotBranch) {
+      parent.sprite.addChild(sprite);
+      sprite.width = sprite.width / parent.sprite.scale.x;
+      sprite.height = sprite.height / parent.sprite.scale.y;
+      sprite.x = -parent.sprite.width / 2 - sprite.width;
+      sprite.y = -parent.sprite.height / 2 - sprite.height/2;
     } else {
-      // This is a root node, use position
-      console.log(sprite.body);
-      //sprite.body.static = true;
+      game.physics.p2.enable(sprite);
+
+      sprite.body.angularDamping = 0.1;
+      sprite.body.damping = 0.2;
+      sprite.body.rotation = angle;
+      sprite.body.setCollisionGroup(collisionGroup);
+      sprite.body.collides(collidesWith);
+      sprite.body.collideWorldBounds = true;
+
+      if(parent) {
+        // TODO: Position sprite at end of parent (don't make simulation explode)
+        sprite.body.mass = parent.sprite.body.mass * (sprite.width * sprite.height) / (parent.sprite.width * parent.sprite.height);
+        var revoConstraint = game.physics.p2.createRevoluteConstraint(parent.sprite, [-parent.sprite.width*0.98/2, 0], sprite, [sprite.width*0.98/2, 0]);
+        var gearConstraint = game.physics.p2.createGearConstraint(parent.sprite, sprite, angle);
+        gearConstraint.setStiffness(1000);
+      } else {
+        // TODO: This is a root node, fixate in place
+        console.log("Root", sprite);
+        //sprite.body.static = true;
+      }
     }
+
+
 
     var part = {
       sprite: sprite,
       revoConstraint: revoConstraint,
       gearConstraint: gearConstraint,
+      isNotBranch: isNotBranch,
       children: [],
     }
     if(parent) {
@@ -60,11 +63,15 @@ function treeGrower(game, barkTex, leafTex, flowerTex, collisionGroup, collidesW
 
     // TODO: Flowers and leaves could be non-physical
 
+    var barkTint = Phaser.Color.getColor(genes.barkColor[0], genes.barkColor[1], genes.barkColor[2]);
+    var leafTint = Phaser.Color.getColor(genes.leafColor[0], genes.leafColor[1], genes.leafColor[2]);
+    var flowerTint = Phaser.Color.getColor(genes.flowerColor[0], genes.flowerColor[1], genes.flowerColor[2]);
+
     function recursiveBranch(part, levels) {
       if(levels <= 0) {
         return;
       }
-      var numChildren = (levels === 1 ? 1 : Math.round(1.3 + Math.random() * 4));
+      var numChildren = (levels === 1 ? 1 : Math.round(1.1 + Math.random() * 3));
       for(var i=0; i<numChildren; i++) {
         var angle = -0.6 + 1.2 * Math.random();
         var length = part.sprite.width / 1.6;
@@ -75,8 +82,8 @@ function treeGrower(game, barkTex, leafTex, flowerTex, collisionGroup, collidesW
         if(levels === 1 || Math.random() < 0.1) {
           // Leaf or flower
           var texture = Math.random() < 0.1 ? flowerTex : leafTex;
-          width *= 2;
-          length = width * 1.2;
+          width = 30;
+          length = width;
           newLevels = 0;
           isNotBranch = true;
         } else {
@@ -84,12 +91,28 @@ function treeGrower(game, barkTex, leafTex, flowerTex, collisionGroup, collidesW
           newLevels = levels - 1;
         }
         var newPart = createPart(part, null, texture, angle, length, width, isNotBranch);
+        newPart.sprite.tint = isNotBranch ? (texture === flowerTex ? flowerTint : leafTint) : barkTint;
         recursiveBranch(newPart, newLevels);
       }
     }
 
+    function recursiveBringToTop(part) {
+      if(part.isNotBranch) {
+        part.sprite.bringToTop();
+      } else {
+        part.sprite.sendToBack();
+      }
+      for(var i=0; i<part.children.length; i++) {
+        recursiveBringToTop(part.children[i]);
+      }
+    }
+
     var root = createPart(null, rootPos, barkTex, 90, 200, 20, false)
-    recursiveBranch(root, 5);
+    root.sprite.tint = barkTint;
+    recursiveBranch(root, 6);
+    recursiveBringToTop(root);
+
+    // TODO: Put leaves, flowers and children on top
   }
 
 

@@ -42,9 +42,9 @@ function createRandomGenes(seed, lockedProps) {
     straightness: getLinearDefaultDistribution(0.2, 1.0, randoms[2]),
     stiffness: getLinearDefaultDistribution(0.2, 1.0, randoms[3]),
     branchCount: getLinearDefaultDistribution(1.8, 4.0, randoms[4]),
-    barkColor: getRgbDeviation(62, 39, 4, 30, randoms.slice(10, 13)),
-    leafColor: getRgbDeviation(62, 255, 4, 30, randoms.slice(13, 16)),
-    flowerColor: getRgbDeviation(255, 201, 194, 30, randoms.slice(16, 19)),
+    barkColor: getRgbDeviation(90, 50, 10, 30, randoms.slice(10, 13)),
+    leafColor: getRgbDeviation(62, 205, 4, 50, randoms.slice(13, 16)),
+    flowerColor: getRgbDeviation(255, 201, 194, 100, randoms.slice(16, 19)),
   });
 }
 

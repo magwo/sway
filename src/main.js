@@ -10,9 +10,9 @@ function preload() {
 
   game.physics.startSystem(Phaser.Physics.P2JS);
 
-  game.load.image('bark', 'images/bark.png');
-  game.load.image('leaf', 'images/leaf.png');
-  game.load.image('flower', 'images/flower.png');
+  game.load.image('bark', 'images/bark3.png');
+  game.load.image('leaf', 'images/flower3.png');
+  game.load.image('flower', 'images/flower3.png');
 }
 
 function create() {
@@ -26,7 +26,7 @@ function create() {
 
   cursors = game.input.keyboard.createCursorKeys();
 
-  var grower = treeGrower(game, "bark", "leaf", "flower", treeCollisionGroup, [otherCollisionGroup]);
+  var grower = treeGrower(game, createRandomGenes(), "bark", "leaf", "flower", treeCollisionGroup, [otherCollisionGroup]);
   grower.constructFullTree([300, 400]);
   grower.constructFullTree([700, 400]);
 }
