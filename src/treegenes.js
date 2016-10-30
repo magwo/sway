@@ -4,9 +4,11 @@ function createGenes(options) {
   return _.defaults(options, {
     baseSize: 0.5,
     slimness: 0.7,
-    straightness: 0.7,
+    crookedness: 0.7,
     stiffness: 0.7,
     branchCount: 2.4,
+    leafSize: 30,
+    flowerSize: 25,
     barkColor: [62, 39, 4],
     leafColor: [62, 255, 4],
     flowerColor: [255, 201, 194],
@@ -38,10 +40,12 @@ function createRandomGenes(seed, lockedProps) {
 
   return _.defaults(lockedProps, {
     baseSize: getLinearDefaultDistribution(0.4, 0.8, randoms[0]),
-    slimness: getLinearDefaultDistribution(0.2, 1.0, randoms[1]),
-    straightness: getLinearDefaultDistribution(0.2, 1.0, randoms[2]),
-    stiffness: getLinearDefaultDistribution(0.2, 1.0, randoms[3]),
+    slimness: getLinearDefaultDistribution(0.6, 1.4, randoms[1]),
+    crookedness: getLinearDefaultDistribution(0.3, 1.7, randoms[2]),
+    stiffness: getLinearDefaultDistribution(0.5, 1.0, randoms[3]),
     branchCount: getLinearDefaultDistribution(1.8, 4.0, randoms[4]),
+    leafSize: getLinearDefaultDistribution(30, 50, randoms[4]),
+    flowerSize: getLinearDefaultDistribution(20, 60, randoms[4]),
     barkColor: getRgbDeviation(90, 50, 10, 30, randoms.slice(10, 13)),
     leafColor: getRgbDeviation(62, 205, 4, 50, randoms.slice(13, 16)),
     flowerColor: getRgbDeviation(255, 201, 194, 100, randoms.slice(16, 19)),

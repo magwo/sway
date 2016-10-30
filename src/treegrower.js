@@ -32,14 +32,17 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
 
       if(parent) {
         // TODO: Position sprite at end of parent (don't make simulation explode)
+        sprite.body.rotation = parent.sprite.body.rotation + angle;
         sprite.body.mass = parent.sprite.body.mass * (sprite.width * sprite.height) / (parent.sprite.width * parent.sprite.height);
-        var revoConstraint = game.physics.p2.createRevoluteConstraint(parent.sprite, [-parent.sprite.width*0.98/2, 0], sprite, [sprite.width*0.98/2, 0]);
+        var revoConstraint = game.physics.p2.createRevoluteConstraint(parent.sprite, [-parent.sprite.width*0.96/2, 0], sprite, [sprite.width*0.96/2, 0]);
         var gearConstraint = game.physics.p2.createGearConstraint(parent.sprite, sprite, angle);
-        gearConstraint.setStiffness(1000);
+        //revoConstraint.setStiffness(300000000000000);
+        revoConstraint.stiffness = 3000000000000;
+        gearConstraint.setStiffness(30000 * sprite.body.mass * genes.stiffness);
       } else {
         // TODO: This is a root node, fixate in place
         console.log("Root", sprite);
-        //sprite.body.static = true;
+
       }
     }
 
@@ -59,7 +62,7 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
   }
 
 
-  grower.constructFullTree = function(rootPos) {
+  grower.constructFullTree = function(ground, xPos) {
 
     // TODO: Flowers and leaves could be non-physical
 
@@ -71,9 +74,9 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
       if(levels <= 0) {
         return;
       }
-      var numChildren = (levels === 1 ? 1 : Math.round(1.1 + Math.random() * 3));
+      var numChildren = (levels === 1 ? 1 : Math.round(1.1 + Math.random() * 2.5));
       for(var i=0; i<numChildren; i++) {
-        var angle = -0.6 + 1.2 * Math.random();
+        var angle = (-0.6 + 1.2 * Math.random()) * genes.crookedness;
         var length = part.sprite.width / 1.6;
         var width = part.sprite.height / 1.3;
         var isNotBranch = false;
@@ -81,17 +84,18 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
         var newLevel = levels;
         if(levels === 1 || Math.random() < 0.1) {
           // Leaf or flower
-          var texture = Math.random() < 0.1 ? flowerTex : leafTex;
-          width = 30;
+          var isFlower = Math.random() < 0.1;
+          var texture = isFlower ? flowerTex : leafTex
+          width = isFlower ? genes.flowerSize : genes.leafSize;
           length = width;
           newLevels = 0;
           isNotBranch = true;
         } else {
           var texture =  barkTex;
-          newLevels = levels - 1;
+          newLevels = ((Math.random() > 0.5 && levels > 4) ? levels - 3 : levels - 1);
         }
         var newPart = createPart(part, null, texture, angle, length, width, isNotBranch);
-        newPart.sprite.tint = isNotBranch ? (texture === flowerTex ? flowerTint : leafTint) : barkTint;
+        newPart.sprite.tint = isNotBranch ? (isFlower ? flowerTint : leafTint) : barkTint;
         recursiveBranch(newPart, newLevels);
       }
     }
@@ -107,7 +111,13 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
       }
     }
 
-    var root = createPart(null, rootPos, barkTex, 90, 200, 20, false)
+    var rootAngle = Math.PI / 2 + (-0.2 + 0.4 * Math.random()) * genes.crookedness;
+    var root = createPart(null, [ground.x + xPos, ground.body.y - ground.height/2], barkTex, rootAngle, 250, 20 * genes.slimness, false);
+    //var constraint = game.physics.p2.createLockConstraint(ground, root.sprite, [xPos, ground.height + root.sprite.height/2], rootAngle);
+
+    var revoConstraint = game.physics.p2.createRevoluteConstraint(ground, [xPos, -ground.height/2], root.sprite, [root.sprite.width*0.96/2, 0]);
+    var gearConstraint = game.physics.p2.createGearConstraint(ground, root.sprite, rootAngle);
+
     root.sprite.tint = barkTint;
     recursiveBranch(root, 6);
     recursiveBringToTop(root);
