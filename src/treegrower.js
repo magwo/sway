@@ -70,7 +70,7 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
       var numChildren = (levels === 1 ? 1 : Math.round(1.1 + Math.random() * 2.5));
       for(var i=0; i<numChildren; i++) {
         var angle = (-0.6 + 1.2 * Math.random()) * genes.crookedness;
-        var length = part.sprite.width / 1.6;
+        var length = part.sprite.width / 1.5;
         var width = part.sprite.height / 1.3;
         var texture = barkTex;
         newLevels = ((Math.random() > 0.5 && levels > 4) ? levels - 3 : levels - 1);
@@ -114,7 +114,7 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
     }
 
     var rootAngle = Math.PI / 2 + (-0.2 + 0.4 * Math.random()) * genes.crookedness;
-    var root = createPart(null, [ground.x + xPos, ground.body.y - ground.height/2], barkTex, rootAngle, 240, 24 * genes.slimness, false);
+    var root = createPart(null, [ground.x + xPos, ground.body.y - ground.height/2], barkTex, rootAngle, 230, 24 * genes.slimness, false);
     var revoConstraint = game.physics.p2.createRevoluteConstraint(ground, [xPos, -ground.height/2], root.sprite, [root.sprite.width*0.96/2, 0]);
     var gearConstraint = game.physics.p2.createGearConstraint(ground, root.sprite, rootAngle);
     root.revoConstraint = revoConstraint;

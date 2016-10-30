@@ -10,7 +10,7 @@ function preload() {
   function resetView() {
     game.scale.setMaximum();
     game.camera.x = -game.width/2;
-    game.camera.y = -game.height;
+    game.camera.y = -game.height - 100;
   };
   game.scale.setResizeCallback(function() { resetView() });
 
