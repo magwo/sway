@@ -115,16 +115,16 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
 
     var rootAngle = Math.PI / 2 + (-0.2 + 0.4 * Math.random()) * genes.crookedness;
     var root = createPart(null, [ground.x + xPos, ground.body.y - ground.height/2], barkTex, rootAngle, 240, 24 * genes.slimness, false);
-
     var revoConstraint = game.physics.p2.createRevoluteConstraint(ground, [xPos, -ground.height/2], root.sprite, [root.sprite.width*0.96/2, 0]);
     var gearConstraint = game.physics.p2.createGearConstraint(ground, root.sprite, rootAngle);
-
-    root.sprite.tint = barkTint;
-    recursiveCreateBranches(root, 6);
     root.revoConstraint = revoConstraint;
     root.gearConstraint = gearConstraint;
+    root.sprite.tint = barkTint;
+
+    recursiveCreateBranches(root, 6);
     recursiveAddLeavesAndFlowers(root);
     recursiveBringToTop(root);
+
     return root;
   }
 
@@ -138,7 +138,7 @@ function treeDestroyer(treeDisplayGroup) {
 
 
   function delayedFade(part) {
-    game.add.tween(part.sprite).to( { alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
+    game.add.tween(part.sprite).to( { alpha: 0 }, 300, Phaser.Easing.Linear.None, true);
     for(var i=0; i<part.children.length; i++) {
       delayedFade(part.children[i]);
     }
@@ -170,8 +170,8 @@ function treeDestroyer(treeDisplayGroup) {
 
   destroyer.destroyTree = function(root) {
     destroyTreeRecursive(root);
-    game.time.events.add(Phaser.Timer.SECOND * 0.4, function() { delayedFade(root) }, this);
-    game.time.events.add(Phaser.Timer.SECOND * 2, function() { delayedRemoval(root) }, this);
+    game.time.events.add(Phaser.Timer.SECOND * 0.1, function() { delayedFade(root) }, this);
+    game.time.events.add(Phaser.Timer.SECOND * 1, function() { delayedRemoval(root) }, this);
   }
 
   return destroyer;

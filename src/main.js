@@ -1,5 +1,5 @@
 var game = new Phaser.Game("100", "100", Phaser.AUTO, '', { preload: preload, create: create, update: update });
-var trees, treeDisplayGroup, treeCollisionGroup, otherCollisionGroup, treeDestroyer;
+var trees, treeDisplayGroup, treeCollisionGroup, otherCollisionGroup, treeDestroyer, wind;
 function preload() {
   game.stage.backgroundColor = "#ffffff";
   game.world.setBounds(-1000, -1000, 2000, 2000);
@@ -44,13 +44,15 @@ function create() {
   ground.body.y = 140;
   ground.body.x = 0;
   ground.body.motionState = p2.Body.KINEMATIC;
+  ground.body.static = true;
+  ground.body.moving = false;
 
 
   treeDisplayGroup = game.add.group();
   trees = [];
 
   treeDestroyer = treeDestroyer(treeDisplayGroup);
-
+  wind = windBlower(game);
 
   function getHashValue(key) {
     var matches = location.hash.match(new RegExp(key+'=([^&]*)'));
@@ -88,5 +90,5 @@ function recreateTrees(seed) {
 
 
 function update() {
-
+  wind.updateWind(game.time.totalElapsedSeconds());
 }
