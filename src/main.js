@@ -40,8 +40,8 @@ function create() {
   ground = game.add.sprite(0, 0, "white");
   game.physics.p2.enable(ground);
   ground.width = 2000;
-  ground.height = 200;
-  ground.body.y = 40;
+  ground.height = 300;
+  ground.body.y = 140;
   ground.body.x = 0;
   ground.body.motionState = p2.Body.KINEMATIC;
 
@@ -60,7 +60,7 @@ function create() {
   var pageLoadSeed = parseInt(getHashValue("seed")) || null;
   recreateTrees(pageLoadSeed);
 
-  game.input.mouse.mouseDownCallback = recreateTrees;
+  game.input.onTap.add(recreateTrees);
   window.onpopstate = function(popevent) {
     if(popevent.state && typeof(popevent.state.seed) === 'number') {
       recreateTrees(popevent.state.seed);
