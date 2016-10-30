@@ -52,7 +52,7 @@ function createRandomGenes(seed, lockedProps) {
     leafSize: getLinearDefaultDistribution(40, 100, randoms[5]),
     flowerSize: getLinearDefaultDistribution(30, 80, randoms[6]),
     flowerFrequency: getQuadraticDistribution(-0.2, 0.9, randoms[7]),
-    barkColor: getRgbDeviation(90, 50, 10, 30, randoms.slice(10, 13)),
+    barkColor: getRgbDeviation(90, 60, 20, 40, randoms.slice(10, 13)),
     leafColor: getRgbDeviation(62, 205, 4, 50, randoms.slice(13, 16)),
     flowerColor: getRgbDeviation(245, 221, 224, 100, randoms.slice(16, 19)),
   });

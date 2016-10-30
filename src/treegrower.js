@@ -138,7 +138,7 @@ function treeDestroyer(treeDisplayGroup) {
 
 
   function delayedFade(part) {
-    game.add.tween(part.sprite).to( { alpha: 0 }, 1500, Phaser.Easing.Linear.None, true);
+    game.add.tween(part.sprite).to( { alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
     for(var i=0; i<part.children.length; i++) {
       delayedFade(part.children[i]);
     }
@@ -161,6 +161,7 @@ function treeDestroyer(treeDisplayGroup) {
     }
 
     if(part.body) {
+      part.body.collidesWith = [];
       part.body.collideWorldBounds = false;
     }
     if(part.revoConstraint) { game.physics.p2.removeConstraint(part.revoConstraint); }
@@ -169,8 +170,8 @@ function treeDestroyer(treeDisplayGroup) {
 
   destroyer.destroyTree = function(root) {
     destroyTreeRecursive(root);
-    game.time.events.add(Phaser.Timer.SECOND * 0, function() { delayedFade(root) }, this);
-    game.time.events.add(Phaser.Timer.SECOND * 1.5, function() { delayedRemoval(root) }, this);
+    game.time.events.add(Phaser.Timer.SECOND * 0.4, function() { delayedFade(root) }, this);
+    game.time.events.add(Phaser.Timer.SECOND * 2, function() { delayedRemoval(root) }, this);
   }
 
   return destroyer;

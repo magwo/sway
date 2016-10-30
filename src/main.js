@@ -51,17 +51,33 @@ function create() {
 
   treeDestroyer = treeDestroyer(treeDisplayGroup);
 
-  recreateTrees();
+
+  function getHashValue(key) {
+    var matches = location.hash.match(new RegExp(key+'=([^&]*)'));
+    return matches ? matches[1] : null;
+  }
+
+  var pageLoadSeed = parseInt(getHashValue("seed")) || null;
+  recreateTrees(pageLoadSeed);
 
   game.input.mouse.mouseDownCallback = recreateTrees;
+  window.onpopstate = function(popevent) {
+    if(popevent.state && typeof(popevent.state.seed) === 'number') {
+      recreateTrees(popevent.state.seed);
+    }
+  }
 }
 
-function recreateTrees() {
+function recreateTrees(seed) {
   trees.forEach(function(tree) {
     treeDestroyer.destroyTree(tree);
   });
 
-  var grower = treeGrower(game, createRandomGenes(), "bark", "leaf", "flower", treeCollisionGroup, [otherCollisionGroup], treeDisplayGroup);
+  if(history && typeof(seed) !== 'number') {
+    var seed = Math.round(Math.random() * 10000000);
+    history.pushState({seed: seed}, "page 2", "#seed=" + seed);
+  }
+  var grower = treeGrower(game, createRandomGenes(seed), "bark", "leaf", "flower", treeCollisionGroup, [otherCollisionGroup], treeDisplayGroup);
   trees.push(grower.constructFullTree(ground, 0));
 
   if(window.innerWidth > 500) {
