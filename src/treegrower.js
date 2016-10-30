@@ -18,7 +18,7 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
       parent.sprite.addChild(sprite);
       sprite.width = sprite.width / parent.sprite.scale.x;
       sprite.height = sprite.height / parent.sprite.scale.y;
-      sprite.x = -parent.sprite.width / 2 - sprite.width;
+      sprite.x = -(parent.sprite.width/parent.sprite.scale.x) / 2 - sprite.width*0.8;
       sprite.y = -parent.sprite.height / 2 - sprite.height/2;
     } else {
       game.physics.p2.enable(sprite);
@@ -112,7 +112,7 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
     }
 
     var rootAngle = Math.PI / 2 + (-0.2 + 0.4 * Math.random()) * genes.crookedness;
-    var root = createPart(null, [ground.x + xPos, ground.body.y - ground.height/2], barkTex, rootAngle, 250, 20 * genes.slimness, false);
+    var root = createPart(null, [ground.x + xPos, ground.body.y - ground.height/2], barkTex, rootAngle, 250, 25 * genes.slimness, false);
     //var constraint = game.physics.p2.createLockConstraint(ground, root.sprite, [xPos, ground.height + root.sprite.height/2], rootAngle);
 
     var revoConstraint = game.physics.p2.createRevoluteConstraint(ground, [xPos, -ground.height/2], root.sprite, [root.sprite.width*0.96/2, 0]);
