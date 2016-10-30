@@ -1,5 +1,5 @@
 var game = new Phaser.Game("100", "100", Phaser.AUTO, '', { preload: preload, create: create, update: update });
-var sprite1, sprite2, revoConstraint;
+var trees, treeDisplayGroup, treeCollisionGroup, otherCollisionGroup, treeDestroyer;
 function preload() {
   game.stage.backgroundColor = "#ffffff";
   game.world.setBounds(-1000, -1000, 2000, 2000);
@@ -26,8 +26,10 @@ function preload() {
 
 function create() {
   //  Create our collision groups. One for the player, one for the pandas
-  var treeCollisionGroup = game.physics.p2.createCollisionGroup();
-  var otherCollisionGroup = game.physics.p2.createCollisionGroup();
+  treeCollisionGroup = game.physics.p2.createCollisionGroup();
+  otherCollisionGroup = game.physics.p2.createCollisionGroup();
+
+  game.input.mouse.capture = true;
 
   game.physics.p2.updateBoundsCollisionGroup();
   game.physics.p2.gravity.y = 100;
@@ -35,32 +37,40 @@ function create() {
 
   cursors = game.input.keyboard.createCursorKeys();
 
-  var ground = game.add.sprite(0, 0, "white");
+  ground = game.add.sprite(0, 0, "white");
   game.physics.p2.enable(ground);
   ground.width = 2000;
-  ground.height = 100;
-  ground.body.y = 0;
+  ground.height = 200;
+  ground.body.y = 40;
   ground.body.x = 0;
   ground.body.motionState = p2.Body.KINEMATIC;
 
-  var grower = treeGrower(game, createRandomGenes(), "bark", "leaf", "flower", treeCollisionGroup, [otherCollisionGroup]);
-  grower.constructFullTree(ground, -400);
-  grower.constructFullTree(ground, 0);
-  grower.constructFullTree(ground, 400);
+
+  treeDisplayGroup = game.add.group();
+  trees = [];
+
+  treeDestroyer = treeDestroyer(treeDisplayGroup);
+
+  recreateTrees();
+
+  game.input.mouse.mouseDownCallback = recreateTrees;
 }
 
+function recreateTrees() {
+  trees.forEach(function(tree) {
+    treeDestroyer.destroyTree(tree);
+  });
+
+  var grower = treeGrower(game, createRandomGenes(), "bark", "leaf", "flower", treeCollisionGroup, [otherCollisionGroup], treeDisplayGroup);
+  trees.push(grower.constructFullTree(ground, 0));
+
+  if(window.innerWidth > 500) {
+    trees.push(grower.constructFullTree(ground, -400));
+    trees.push(grower.constructFullTree(ground, 400));
+  }
+}
+
+
 function update() {
-
-  if(cursors.up.isDown) {
-
-  }
-  if(cursors.down.isDown) {
-    sprite1.scale.setTo(10,1);
-    sprite2.scale.setTo(10,1);
-
-    revoConstraint.pivotA[0] = -2;
-    revoConstraint.pivotB[0] = -2;
-    console.log(revoConstraint);
-  }
 
 }

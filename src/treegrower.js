@@ -1,6 +1,6 @@
 
 
-function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, collidesWith) {
+function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, collidesWith, treeDisplayGroup) {
   var grower = {};
 
   function getEndpoint(sprite) {
@@ -9,7 +9,7 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
 
   function createPart(parent, position, texture, angle, startLength, startWidth, isNotBranch) {
     position = position || [parent.sprite.body.x, parent.sprite.body.y];
-    var sprite = game.add.sprite(position[0], position[1], texture);
+    var sprite = treeDisplayGroup.create(position[0], position[1], texture);
     //sprite.rotation = angle;
     sprite.width = startLength;
     sprite.height = startWidth;
@@ -40,13 +40,8 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
         revoConstraint.stiffness = 3000000000000;
         gearConstraint.setStiffness(30000 * sprite.body.mass * genes.stiffness);
       } else {
-        // TODO: This is a root node, fixate in place
-        console.log("Root", sprite);
-
       }
     }
-
-
 
     var part = {
       sprite: sprite,
@@ -64,13 +59,11 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
 
   grower.constructFullTree = function(ground, xPos) {
 
-    // TODO: Flowers and leaves could be non-physical
-
     var barkTint = Phaser.Color.getColor(genes.barkColor[0], genes.barkColor[1], genes.barkColor[2]);
     var leafTint = Phaser.Color.getColor(genes.leafColor[0], genes.leafColor[1], genes.leafColor[2]);
     var flowerTint = Phaser.Color.getColor(genes.flowerColor[0], genes.flowerColor[1], genes.flowerColor[2]);
 
-    function recursiveBranch(part, levels) {
+    function recursiveCreateBranches(part, levels) {
       if(levels <= 0) {
         return;
       }
@@ -79,56 +72,106 @@ function treeGrower(game, genes, barkTex, leafTex, flowerTex, collisionGroup, co
         var angle = (-0.6 + 1.2 * Math.random()) * genes.crookedness;
         var length = part.sprite.width / 1.6;
         var width = part.sprite.height / 1.3;
-        var isNotBranch = false;
+        var texture = barkTex;
+        newLevels = ((Math.random() > 0.5 && levels > 4) ? levels - 3 : levels - 1);
+        var newPart = createPart(part, null, texture, angle, length, width, false);
+        newPart.sprite.tint = barkTint;
+        recursiveCreateBranches(newPart, newLevels);
+      }
+    }
 
-        var newLevel = levels;
-        if(levels === 1 || Math.random() < 0.1) {
-          // Leaf or flower
-          var isFlower = Math.random() < 0.1;
-          var texture = isFlower ? flowerTex : leafTex
-          width = isFlower ? genes.flowerSize : genes.leafSize;
-          length = width;
-          newLevels = 0;
-          isNotBranch = true;
-        } else {
-          var texture =  barkTex;
-          newLevels = ((Math.random() > 0.5 && levels > 4) ? levels - 3 : levels - 1);
-        }
-        var newPart = createPart(part, null, texture, angle, length, width, isNotBranch);
-        newPart.sprite.tint = isNotBranch ? (isFlower ? flowerTint : leafTint) : barkTint;
-        recursiveBranch(newPart, newLevels);
+    function recursiveAddLeavesAndFlowers(part) {
+      var numChildren = part.children.length;
+      if(numChildren === 0 || Math.random() < 0.1) {
+        // Leaf or flower
+        var angle = (-0.6 + 1.2 * Math.random()) * genes.crookedness;
+        var isFlower = Math.random() < genes.flowerFrequency;
+        var texture = isFlower ? flowerTex : leafTex;
+        var width = isFlower ? genes.flowerSize : genes.leafSize;
+        var length = width;
+        var newPart = createPart(part, null, texture, angle, length, width, true);
+        newPart.sprite.tint = isFlower ? flowerTint : leafTint;
+      }
+
+      for(var i=0; i<numChildren; i++) {
+        recursiveAddLeavesAndFlowers(part.children[i]);
       }
     }
 
     function recursiveBringToTop(part) {
-      if(part.isNotBranch) {
-        part.sprite.bringToTop();
-      } else {
-        part.sprite.sendToBack();
-      }
       for(var i=0; i<part.children.length; i++) {
-        recursiveBringToTop(part.children[i]);
+        if(part.children[i].isNotBranch) {
+          part.children[i].sprite.bringToTop();
+        } else {
+          part.children[i].sprite.sendToBack();
+        }
       }
+
+      for(var i=0; i<part.children.length; i++) {
+          recursiveBringToTop(part.children[i]);
+      }
+
     }
 
     var rootAngle = Math.PI / 2 + (-0.2 + 0.4 * Math.random()) * genes.crookedness;
-    var root = createPart(null, [ground.x + xPos, ground.body.y - ground.height/2], barkTex, rootAngle, 250, 25 * genes.slimness, false);
-    //var constraint = game.physics.p2.createLockConstraint(ground, root.sprite, [xPos, ground.height + root.sprite.height/2], rootAngle);
+    var root = createPart(null, [ground.x + xPos, ground.body.y - ground.height/2], barkTex, rootAngle, 240, 24 * genes.slimness, false);
 
     var revoConstraint = game.physics.p2.createRevoluteConstraint(ground, [xPos, -ground.height/2], root.sprite, [root.sprite.width*0.96/2, 0]);
     var gearConstraint = game.physics.p2.createGearConstraint(ground, root.sprite, rootAngle);
 
     root.sprite.tint = barkTint;
-    recursiveBranch(root, 6);
+    recursiveCreateBranches(root, 6);
+    root.revoConstraint = revoConstraint;
+    root.gearConstraint = gearConstraint;
+    recursiveAddLeavesAndFlowers(root);
     recursiveBringToTop(root);
-
-    // TODO: Put leaves, flowers and children on top
+    return root;
   }
-
-
-
 
 
   // TODO: Implement continuous grower
   return grower;
+}
+
+function treeDestroyer(treeDisplayGroup) {
+  var destroyer = {};
+
+
+  function delayedFade(part) {
+    game.add.tween(part.sprite).to( { alpha: 0 }, 1500, Phaser.Easing.Linear.None, true);
+    for(var i=0; i<part.children.length; i++) {
+      delayedFade(part.children[i]);
+    }
+  }
+
+  function delayedRemoval(part) {
+    treeDisplayGroup.removeChild(part.sprite);
+    part.sprite.pendingDestroy = true;
+    if(part.sprite.body) {
+      part.sprite.body.destroy();
+    }
+    for(var i=0; i<part.children.length; i++) {
+      delayedRemoval(part.children[i]);
+    }
+  }
+
+  function destroyTreeRecursive(part) {
+    for(var i=0; i<part.children.length; i++) {
+      destroyTreeRecursive(part.children[i]);
+    }
+
+    if(part.body) {
+      part.body.collideWorldBounds = false;
+    }
+    if(part.revoConstraint) { game.physics.p2.removeConstraint(part.revoConstraint); }
+    if(part.gearConstraint) { game.physics.p2.removeConstraint(part.gearConstraint); }
+  }
+
+  destroyer.destroyTree = function(root) {
+    destroyTreeRecursive(root);
+    game.time.events.add(Phaser.Timer.SECOND * 0, function() { delayedFade(root) }, this);
+    game.time.events.add(Phaser.Timer.SECOND * 1.5, function() { delayedRemoval(root) }, this);
+  }
+
+  return destroyer;
 }

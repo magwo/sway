@@ -9,6 +9,7 @@ function createGenes(options) {
     branchCount: 2.4,
     leafSize: 30,
     flowerSize: 25,
+    flowerFrequency: 0.1,
     barkColor: [62, 39, 4],
     leafColor: [62, 255, 4],
     flowerColor: [255, 201, 194],
@@ -18,6 +19,10 @@ function createGenes(options) {
 
 function getLinearDefaultDistribution(min, max, normalizedNum) {
   return min + (max - min) * normalizedNum;
+}
+
+function getQuadraticDistribution(min, max, normalizedNum) {
+  return getLinearDefaultDistribution(min, max, normalizedNum * Math.abs(normalizedNum));
 }
 
 function clampColorVal(v) {
@@ -44,11 +49,12 @@ function createRandomGenes(seed, lockedProps) {
     crookedness: getLinearDefaultDistribution(0.3, 1.7, randoms[2]),
     stiffness: getLinearDefaultDistribution(0.5, 1.0, randoms[3]),
     branchCount: getLinearDefaultDistribution(1.8, 4.0, randoms[4]),
-    leafSize: getLinearDefaultDistribution(40, 100, randoms[4]),
-    flowerSize: getLinearDefaultDistribution(30, 130, randoms[4]),
+    leafSize: getLinearDefaultDistribution(40, 100, randoms[5]),
+    flowerSize: getLinearDefaultDistribution(30, 80, randoms[6]),
+    flowerFrequency: getQuadraticDistribution(-0.2, 0.9, randoms[7]),
     barkColor: getRgbDeviation(90, 50, 10, 30, randoms.slice(10, 13)),
     leafColor: getRgbDeviation(62, 205, 4, 50, randoms.slice(13, 16)),
-    flowerColor: getRgbDeviation(255, 201, 194, 100, randoms.slice(16, 19)),
+    flowerColor: getRgbDeviation(245, 221, 224, 100, randoms.slice(16, 19)),
   });
 }
 
